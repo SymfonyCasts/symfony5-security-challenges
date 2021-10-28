@@ -1,0 +1,101 @@
+make_user_2a:
+  question: |
+    Your "user" class can be called whatever you want... and *look* however you want... as
+    long as it implements `UserInterface`. In Symfony 6, what info does `UserInterface` require
+    your "user" class to provide?
+  explanation: |
+    In Symfony 6, the interface will only require `getUserIdentifier()`, `getRoles()` and
+    `eraseCredentials()`. In this tutorial we DO have the other methods on `User`, but
+    only because they're deprecated... and in Symfony 6 you CAN still have a "hashed password",
+    but only if you need it. For the purposes of this question, I'm ignoring `eraseCredentials()`
+    because it doesn't "provide" any information.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          `UserInterface` requires your user to have a "user identifier" and an array of "roles".
+        b: |
+          `UserInterface` requires your user to have a "user identifier", an array of "roles"
+          and a "hashed password".
+        c: |
+          `UserInterface` requires your user to have a "username", "user identifier", an array
+          of "roles" and a "hashed password".
+      correct: a
+
+make_user_2b:
+  question: |
+    Does your `User` class need to be a Doctrine entity?
+  explanation: |
+    Here, we should explain that if your `User` class is NOT a Doctrine entity, then `make:user`
+    would generate a custom "user provider" class where you would need to do some manual work.
+    If you use an entity, you get to use the built-in entity provider that we see in
+    `security.yaml`.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Technically no, but you'll need to create your own authenticator system to support
+          a non-entity `User` class.
+        b: |
+          No: you're free to make your `User` class a Doctrine entity or not.
+        c: |
+          Yes. But it's no problem: if you load users data from somewhere else (e.g. an API),
+          just store a local "cache" of that data in your local database.
+      correct: b
+
+firewalls_authenticator_5:
+  question: |
+    Check out the following firewalls setup in `security.yaml`:
+
+    ```yaml
+    security:
+        # ...
+        firewalls:
+            main_firewall:
+                pattern: ^/api/
+                # ...
+                custom_authenticator: App\Security\MainApiAuthenticator
+
+            products_firewall:
+                pattern: ^/api/product
+                # ...
+                custom_authenticator: App\Security\ProductApiAuthenticator
+    ```
+
+    If I make a request to `/api/product`, which authenticators will be executed?
+  explanation: |
+    The explanation here is mostly that... this is terrible example! First, yes, only 1 firewall
+    is EVER active on a request, and it figures it out by starting from the top and finding
+    the FIRST firewall that matches the URL. But more importantly, it almost never makes sense
+    to have two firewalls.... even if you have two different ways to authenticate. This should
+    be moved to one firewall. The exception to that rule is if you have, for example, a frontend
+    that has one `User` class and an API under `/api/` where, if you log in, you will be logged
+    in as a completely different user class - e.g. `ApiUser`.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Both authenticators will be executed because both firwalls match the current URL
+          and will be activated.
+        b: |
+          Only `MainApiAuthenticator` will be executed because that one firewall matches first.
+        c: |
+          Only `ProductApiAuthenticator` will be executed because its firewall matches closer
+          and will be executed first.
+      correct: b
+
+passport_6:
+  question: |
+    We know that the `supports()` method in an authenticator is called at the start of *every*
+    single request. What happens if we return `false` from this method?
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          The request continues like normal and the controller for that page is executed.
+        b: |
+          Authentication fails & the `onAuthenticationFailure()` method is called.
+        c: |
+          The `supports()` method on any other authenticators is called. And if all of those
+          return `false`, access is denied.
+      correct: a
