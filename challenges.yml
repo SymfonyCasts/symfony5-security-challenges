@@ -99,3 +99,106 @@ passport_6:
           The `supports()` method on any other authenticators is called. And if all of those
           return `false`, access is denied.
       correct: a
+
+success_user_provider_8:
+  question: |
+    In our app, we're using the `entity` user provider:
+
+    ```yaml
+    security
+        # ...
+        providers:
+            app_user_provider:
+                entity:
+                    class: App\Entity\User
+                    property: email
+    ```
+
+    In theory, could we design a security system that *never* actually *called* any methods
+    on our user provider?
+  explanation: |
+    First, yes, you DO need to configure the `providers` key in `security.yaml`. But
+    whether or not any methods are actually called on it depends on your app. Your
+    user provider is called in two main situations:
+
+    1. To load the user in your authenticator (unless you pass a custom user loader function).
+    2. To refresh the user at the start of your request (unless you set `stateless: true`
+       for your firewall, which you can do for API-only apps).
+
+    So, in just the right situation, your user loader will never be called.
+
+    But the user provider will *also* be called if you use certain features, like
+    `remember_me` or `switch_user`.
+
+    TL;DR You probably need a user provider, but it does mostly boring background work for us.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Yes: If you used a "stateless" firewall (one that doesn't store the user in the
+          session between requests) and passed a custom user loader in your authenticator
+          (like we are).
+        b: |
+          No: At the very least, the user provider is needed to "refresh" the user on every
+          request.
+        c: |
+          No: The user provider is used in various spots. For example, the web debug toolbar
+          uses it to tell us who is logged in.
+      correct: a
+
+auth_errors_9:
+  question: |
+    Check out this code in our authenticator:
+
+    ```php
+    public function authenticate(Request $request): Passport
+    {
+        $email = $request->request->get('email');
+        $password = $request->request->get('password');
+
+        if ($email === 'ryan@symfonycasts.com') {
+            throw new UserNotFoundException('Get outta here Ryan!');
+        }
+
+        return new Passport(new UserBadge($email), new PasswordCredentials($passowrd));
+    }
+
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
+    {
+        dd($exception);
+    }
+    ```
+
+    If I try to login as `ryan@symfonycasts.com`, what type of object will be dumped inside
+    `onAuthenticationFailure()`? And if we redirected to `/login` and rendered that error,
+    what text would be displayed?
+  explanation: |
+    This is a fun one! First, it's legal to throw an `AuthenticationException` (or sub-class)
+    from *anywhere* during the authentication process. So throwing this exception directly
+    in `authenticate()` is just fine.
+
+    Next, whatever exception you throw is directly passed to `onAuthenticationFailure()`.
+    The only exception to that rule is `UserNotFoundException`, which *may* or may not be
+    converted to a `BadCredentialsException`, depending on your config.
+
+    Finally, you *are* free to pass a custom message to an authentication exception... but
+    it's never used! Instead, each class has a `getMessageKey()` method that returns
+    a hard-coded explanation string. If you *do* need to send the user a very customized
+    message, there *is* a special class for that called `CustomUserMessageAuthenticationException`
+    that we'll talk about later.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          The exception class would either be `UserNotFoundException` or `BadCredentialsException`
+          based on whether or not you have `hide_user_not_found` in your `security.yaml`.
+          The user would see `Get outta here Ryan!`
+        b: |
+          The exception class would either be `UserNotFoundException` or `BadCredentialsException`
+          based on whether or not you have `hide_user_not_found` in your `security.yaml`.
+          The user would see `Username could not be found.`
+        c: |
+          The `onAuthenticationFailure()` method would actually *not* be called because you
+          can't throw that exception from directly inside `authenticate()`: you can only throw
+          it from inside a "user loader" callback, like we have in the tutorial.
+      correct: b
