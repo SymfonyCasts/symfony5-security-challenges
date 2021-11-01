@@ -160,7 +160,7 @@ auth_errors_9:
             throw new UserNotFoundException('Get outta here Ryan!');
         }
 
-        return new Passport(new UserBadge($email), new PasswordCredentials($passowrd));
+        return new Passport(new UserBadge($email), new PasswordCredentials($password));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
