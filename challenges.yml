@@ -202,3 +202,115 @@ auth_errors_9:
           can't throw that exception from directly inside `authenticate()`: you can only throw
           it from inside a "user loader" callback, like we have in the tutorial.
       correct: b
+
+password_credentials_12:
+  question: |
+    I've created a custom authenticator and need to check to make sure the user's password
+    is correct. Here is the `authenticate()` method:
+
+    ```php
+    public function authenticate(Request $request): PassportInterface
+    {
+        $email = $request->request->get('email');
+        $password = $request->request->get('password');
+
+        return new Passport(
+            new UserBadge($email),
+            new PasswordCredentials($password)
+        );
+    }
+    ```
+
+    Will this correctly validate the user's password?
+  explanation: |
+    The entire purpose of `PasswordCredentials` is to give you an easy way to return
+    the plain-text password and let someone else (an event listener!) do the hard work
+    of checking it against the hashed password in the database. And, thanks to the fact
+    that all badges must be "resolved" (and "credentials" objects are just badges),
+    if the listener that checks the password fails to run for any reason, authentication
+    will automatically fail.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Yes. You pass the plain-text submitted password to `PasswordCredentials`
+          and then you are guaranteed that some other process will check to make sure
+          the password is correct (if it is not, authentication will fail).
+        b: |
+          Maybe. This is correct, but if your `password_hashers` configuration is not
+          correct, then nothing will validate the submitted password.
+        c: |
+          No. This simply passes the plain-text password to `PasswordCredentials`,
+          but it fails to actually check that it is valid!
+      correct: a
+
+remember_me_14:
+  question: |
+    Our "remember me" checkbox looks like this:
+
+    ```twig
+    <input type="checkbox" name="_remember_me"> Remember me
+    ```
+
+    What would happen if we renamed the checkbox to `allow_remember_me`? If I checked it
+    and submitted, would the `REMEMBERME` cookie be set?
+  explanation: |
+    Unlike the `CsrfTokenBadge`, we don't manually read the "remember me" checkbox POST
+    data and pass it to the `RememberMeBadge`. Instead, the "remember me" system looks for
+    the POST'ed checkbox data all by itself. And, by default, it expects the name of that
+    data to be `_remember_me`. However, this *is* something that can be configured in
+    `security.yaml`, by setting:
+    ```yaml
+    security:
+        firewalls:
+            main:
+                remember_me:
+                    remember_me_parameter: allow_remember_me
+    ```
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Yes, as long as you read the new `allow_remember_me` POST parameter and pass it
+          to the `RememberMeBadge`.
+        b: |
+          Yes, as long as you configured the new name beneath the `remember_me` configuration
+          in `security.yaml`.
+        c: |
+          No, the remember me system knows to look for a checkbox with the exact name
+          `_remember_me`.
+      correct: b
+
+password_credentials_21:
+  question: |
+    Which of the following is *not* a valid way to deny access in a controller?
+  explanation: |
+    The *real* secret to denying access in Symfony is to throw an `AccessDeniedException`. In
+    fact, no matter *how* you deny access, this exception is always thrown behind the scenes.
+    You can throw it manually, call `denyAccessUnlessGranted()` (which throws it for you) or
+    use the `IsGranted()` attribute/annotation from SensioFrameworkExtraBundle, which *also*
+    throws that exception.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          ```php
+          $this->denyAccessUnlessGranted('ROLE_ADMIN');
+          ```
+        b: |
+          ```php
+          if (!$this->isGranted('ROLE_ADMIN')) {
+              throw new AccessDeniedException('Get outta here!');
+          }
+          ```
+        c: |
+          ```
+          #[IsGranted('ROLE_ADMIN')]
+          public function kittenPage()
+          {
+              // ...
+          }
+          ```
+        d: |
+          These are all valid ways to deny access!
+      correct: d
