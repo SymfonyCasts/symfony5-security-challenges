@@ -314,3 +314,46 @@ password_credentials_21:
         d: |
           These are all valid ways to deny access!
       correct: d
+
+is_auth_23:
+  question: |
+    Imagine I have the following link in Twig:
+
+    ```twig
+    {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+        <a href="{{ path('app_change_password') }}">Change Password</a>
+    {% endif %}
+    ```
+
+    And this code in the controller:
+
+    ```php
+    /**
+     * @Route("/change/password", name="app_change_password")
+     */
+    public function changePassword()
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+    }
+    ```
+
+    Does this code make sense?
+  explanation: |
+    If a user is only authenticated thanks to a "remember me" cookie and then they are
+    denied access, Symfony is smart enough to redirect them to the login page so that
+    they can "fully" login. This is a *perfect* way to organize a change password page!
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          This code does *not* make sense. You should change the Twig code to check
+          for `IS_AUTHENTICATED_FULLY` to match the controller. Otherwise, if a user
+          that is only authenticated thanks to their "remember me" cookie clicks the link,
+          they will get an access denied screen!
+        b: |
+          This code *does* technically make sense... as long as the system is not using
+          a "remember me" cookie system.
+        c: |
+          This code *does* make sense. If a user that is only authenticated thanks to their
+          "remember me" cookie clicks the link, Symfony redirect them to the login page.
+      correct: c
