@@ -357,3 +357,53 @@ is_auth_23:
           This code *does* make sense. If a user that is only authenticated thanks to their
           "remember me" cookie clicks the link, Symfony redirect them to the login page.
       correct: c
+
+impersonation_27:
+  question: |
+    I'm working on adding the `switch_user` feature to my site. To switch, I know that
+    I can add `?_switch_user=` to the end of any URL. But... instead of using the user's
+    email address, I want to be able to use the user's `id` in the URL. Is that possible?
+  explanation: |
+    If you add `?_switch_user=5` to the end of a URL, that `5` (or whatever you put
+    there) is passed to your user provider. In our project, thanks to some config
+    in `security.yaml`, our user provider queries using the `email` property. But
+    you could also change that to be `id` (just beware that the `form_login` authenticator
+    also uses the user provider!).
+
+    You could also condfigure a second user provider in `security.yaml` and use the
+    original one as your "main" user provider, and then, under the `switch_user` config,
+    use the other one *just* for it. Something like this:
+
+    ```
+    security:
+        providers:
+            main_provider:
+                entity:
+                   class: App\Entity\User
+                   property: email
+            by_id_provider:
+                entity:
+                   class: App\Entity\User
+                   property: id
+
+        firewalls:
+             main:
+                # tell your firewall to use this as its main provider
+                provider: main_provider
+
+                switch_user:
+                   # tell switch_user to use the *other* provider
+                   provider: by_id_provider
+    ```
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Yes: you can use either the `email` or `id` out-of-the-box.
+        b: |
+          No: only the value returned from `getUserIdentifier()` can be used.
+        c: |
+          Yes: there is an option under `switch_user` to choose which property to query.
+        d: |
+          Yes: by configuring your user provider.
+      correct: d
