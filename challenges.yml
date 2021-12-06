@@ -407,3 +407,29 @@ impersonation_27:
         d: |
           Yes: by configuring your user provider.
       correct: d
+
+manual_auth_31:
+  question: |
+    In our controller, when we called `$userAuthenticator->authenticateUser()`, we
+    *returned* that value. Why? What is the *real* benefit of this?
+  explanation: |
+    It *is* true that returning this might help centralize some redirect logic, but that's
+    super minor. The *biggest* benefit is that your authenticator's `onAuthenticationSuccess()`
+    method knows to handle the "target path". In other words, your authenticator knows how to
+    redirect back to the page the user was originally trying to view. By reusing that logic,
+    we get the same behavior after registration. Booya!
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          Simple centralization and removing duplication. Instead of having logic to
+          redirect the user in the authenticator *and* in our controller, we can just
+          return this value and remove the extra redirect logic in the controller.
+        b: |
+          This is needed so that we return the same response as the authenticator. Without
+          this, the session cookie can't be sent back to the user.
+        c: |
+          If the user originally went to a page that required authentication (e.g. `/checkout`),
+          then eventually went to the registration form and submitted it, this will redirect
+          the user back to their original page (i.e. `/checkout`).
+      correct: c
