@@ -433,3 +433,37 @@ manual_auth_31:
           then eventually went to the registration form and submitted it, this will redirect
           the user back to their original page (i.e. `/checkout`).
       correct: c
+
+voters_34:
+  question: |
+    Check out the following code:
+
+    ```php
+    public function someController()
+    {
+        $this->denyAccessUnlessGranted('BANANA');
+    }
+    ```
+
+    Assuming that I'm using the normal security system with nothing custom, what
+    will happen when we execute this code?
+  explanation: |
+    When this code is executed, Symfony will ask each voter whether they know how to vote
+    on the attribute `BANANA`. The two voters that you get out of the box know how to vote
+    on strings starting with `ROLE_` and `IS_AUTHENTICATED_`... but not `BANANA`. So both
+    will return `ACCESS_ABSTAIN`. If all voters "abstain", for safety purposes, access
+    is denied.
+
+    But you won't get an error because... you're really free to pass *any* value to
+    the authorization system.
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          The security system will grant access because no voters understand this attribute.
+        b: |
+          The security system will deny access because no voters understand this attribute.
+        c: |
+          An `InvalidArgumentException` will be thrown because `BANANA` (while delicious),
+          does not start with `ROLE_` or `IS_AUTHENTICATED_`.
+      correct: b
