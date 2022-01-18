@@ -467,3 +467,28 @@ voters_34:
           An `InvalidArgumentException` will be thrown because `BANANA` (while delicious),
           does not start with `ROLE_` or `IS_AUTHENTICATED_`.
       correct: b
+
+authenticator_app_46:
+  question: |
+    The QR code is an image that's... really... just a fancy way to store data. What data
+    is included inside a QR code for two-factor authentication?
+  explanation: |
+    The totp secret is what your authenticator app will use to generate the codes (it's also used by our
+    app to *verify* the code). So that is *definitely* needed.
+
+    But beyond that, you embed various other pieces of info, like the "issuer", which your authenticator
+    app uses for your application's "name". You can also embed an "image" pointing to your logo's URL...
+    or, theoretically, anything you want (though your app will probably just ignore it if you embed your
+    favorite color or band name).
+  features:
+    multiple_choice:
+      choices:
+        a: |
+          The "totp secret".
+        b: |
+          The "totp secret" + any other info you want to embed.
+        c: |
+          A randomly-generated generated from the "totp secret".
+        d: |
+          A randomly-generated generated from the "totp secret" + any other info you want to embed.
+      correct: b
