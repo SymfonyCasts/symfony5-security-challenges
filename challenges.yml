@@ -370,7 +370,7 @@ impersonation_27:
     you could also change that to be `id` (just beware that the `form_login` authenticator
     also uses the user provider!).
 
-    You could also condfigure a second user provider in `security.yaml` and use the
+    You could also configure a second user provider in `security.yaml` and use the
     original one as your "main" user provider, and then, under the `switch_user` config,
     use the other one *just* for it. Something like this:
 
